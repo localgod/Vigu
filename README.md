@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/localgod/Vigu.png?branch=master)](http://travis-ci.org/localgod/Vigu)
+
 Vigu
 ====
 
@@ -6,7 +8,8 @@ Vigu
 
 Vigu is a PHP error aggregation system, which collects all possible PHP errors and aggregates them in a Redis database. It includes a frontend to browse the data.
 
-This application depends on several other projects:
+
+This project depends on several other projects:
  * [Redis](http://redis.io) 
  * [Zaphod distribution](https://github.com/Ibmurai/zaphod) 
  * [The Frood VC framework](https://github.com/Ibmurai/frood)

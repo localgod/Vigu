@@ -6,7 +6,12 @@ Vigu
 
 Vigu is a PHP error aggregation system, which collects all possible PHP errors and aggregates them in a Redis database. It includes a frontend to browse the data.
 
-This application is based on [Redis](http://redis.io) and The [Zaphod distribution](https://github.com/Ibmurai/zaphod) of [The Frood VC framework](https://github.com/Ibmurai/frood).
+This application use code form several other projects:
+ * [Redis](http://redis.io) 
+ * [Zaphod distribution](https://github.com/Ibmurai/zaphod) 
+ * [The Frood VC framework](https://github.com/Ibmurai/frood)
+ * [Jquery](http://jquery.com/)
+ * [jqGrid](http://www.trirand.com/blog/)
 
 
 Requirements

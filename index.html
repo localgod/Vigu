@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Vigu by localgod</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Vigu</h1>
+        <p>Error aggregation application written in and for Php</p>
+        <p class="view"><a href="https://github.com/localgod/Vigu">View the Project on GitHub <small>localgod/Vigu</small></a></p>
+        <ul>
+          <li><a href="https://github.com/localgod/Vigu/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/localgod/Vigu/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/localgod/Vigu">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><a href="http://travis-ci.org/localgod/Vigu"><img src="https://secure.travis-ci.org/localgod/Vigu.png?branch=master" alt="Build Status"></a></p>
+
+<h1>Vigu</h1>
+
+<p><em>Authors</em> <a href="mailto:ibber_of_crew42@hotmail.com">Jens Riisom Schultz</a>, <a href="mailto:localgod@heaven.dk">Johannes Skov Frandsen</a>
+<em>Since</em>   2012-03-20</p>
+
+<p>Vigu is a PHP error aggregation system, which collects all possible PHP errors and aggregates them in a Redis database. It includes a frontend to browse the data.</p>
+
+<p>This project is based on <a href="https://github.com/Ibmurai/zaphod">Zaphod</a> and depends on several other projects:</p>
+
+<ul>
+<li>
+<a href="http://redis.io">Redis</a> </li>
+<li><a href="https://github.com/Ibmurai/frood">The Frood VC framework</a></li>
+<li><a href="https://github.com/Ibmurai/froodTwig">FroodTwig</a></li>
+<li><a href="https://github.com/shaneharter/PHP-Daemon">PHP-Daemon</a></li>
+<li><a href="http://jquery.com/">Jquery</a></li>
+<li><a href="http://www.trirand.com/blog/">jqGrid</a></li>
+</ul><h2>Requirements</h2>
+
+<ul>
+<li>You need apache mod_rewrite.</li>
+<li>You need the <code>pecl_http</code> PHP extension.</li>
+<li>You need the <a href="https://github.com/nicolasff/phpredis"><code>phpredis</code></a> PHP extension.</li>
+<li>You need a Redis server, dedicated to this application.</li>
+</ul><h2>Documentation</h2>
+
+<ul>
+<li>Point your browser to the root of the site, to start browsing errors.</li>
+</ul><h2>Installing</h2>
+
+<ul>
+<li>Clone vigu from git.</li>
+<li>Run <code>install.php</code> from command line.</li>
+<li>Copy <code>vigu.ini.dist</code> to <code>vigu.ini</code> and edit it.</li>
+<li>Make a vhost, to point at the root of vigu or the <code>web/</code> folder, or however you choose to serve the site.</li>
+<li>Copy <code>vigu.ini</code> to <code>handlers/vigu.ini</code>.</li>
+<li>Include <code>handlers/shutdown.php</code> before anything else, preferably through php.ini's <code>auto_prepend_file</code> directive. It has no dependencies besides it's configuration file, which must exist next to it, so you can safely deploy it alone, to all your servers.</li>
+</ul><h2>License</h2>
+
+<p>Copyright 2012 Jens Riisom Schultz, Johannes Skov Frandsen</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0
+</code></pre>
+
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/localgod">localgod</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>

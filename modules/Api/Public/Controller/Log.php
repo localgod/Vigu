@@ -6,8 +6,8 @@
  *
  * @category TODO_DOCUMENT_ME
  * @package  TODO_DOCUMENT_ME
- * @author   Jens Riisom Schultz <jers@fynskemedier.dk>
- * @author   Johannes Skov Frandsen <jsf@fynskemedier.dk>
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ * @author   Johannes Skov Frandsen <localgod@heaven.dk>
  */
 
 /**
@@ -15,8 +15,8 @@
  *
  * @category TODO_DOCUMENT_ME
  * @package  TODO_DOCUMENT_ME
- * @author   Jens Riisom Schultz <jers@fynskemedier.dk>
- * @author   Johannes Skov Frandsen <jsf@fynskemedier.dk>
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ * @author   Johannes Skov Frandsen <localgod@heaven.dk>
  */
 class ApiPublicControllerLog extends ApiPublicController {
 	/**

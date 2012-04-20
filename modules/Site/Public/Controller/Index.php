@@ -2,11 +2,11 @@
 /**
  * PHP version 5
  *
- * @author Jens Riisom Schultz <jers@fynskemedier.dk>
+ * @author Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 
 /**
- * @author Jens Riisom Schultz <jers@fynskemedier.dk>
+ * @author Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class SitePublicControllerIndex extends SitePublicController {
 	/**

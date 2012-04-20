@@ -6,7 +6,7 @@
  *
  * @category TODO_DOCUMENT_ME
  * @package  TODO_DOCUMENT_ME
- * @author   Jens Riisom Schultz <jers@fynskemedier.dk>
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  * @since    2012-TODO-
  */
 
@@ -16,7 +16,7 @@
  * @category   TODO_DOCUMENT_ME
  * @package    TODO_DOCUMENT_ME
  * @subpackage Class
- * @author     Jens Riisom Schultz <jers@fynskemedier.dk>
+ * @author     Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class SitePublicController extends FroodController {
 	/**

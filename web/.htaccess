@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+
+    RewriteBase /web
+
+    # This rule excludes real files from the rewriting and lets them pass through unaffected.
+    RewriteCond %{REQUEST_FILENAME} !-f
+
+    # Direct all requests to run.php, except specified file types.
+    RewriteRule ^ run.php [QSA,L]
+</IfModule>

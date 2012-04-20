@@ -1,0 +1,24 @@
+{% extends "layout.html.twig" %}
+{% block js %}
+	{{ parent() }}
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+    <script src="/scripts/vendor/grid.locale-en.js"></script>
+    <script src="/scripts/vendor/jquery.jqGrid.min.js"></script>
+    <script src="/scripts/vendor/jquery.ui.selectmenu.js"></script>
+	<script src="/scripts/vigu.js"></script>
+	<script src="/scripts/vigu.toolbar.js"></script>
+	<script src="/scripts/vigu.document.js"></script>
+	<script src="/scripts/vigu.grid.js"></script>
+	<script src="/scripts/jquery.vigu.js"></script>
+{% endblock %}
+{% block css %}
+	{{ parent() }}
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="/styles/jquery.ui.selectmenu.css">
+    <link rel="stylesheet" href="/styles/ui.jqgrid.css">
+    <link rel="stylesheet" href="/styles/style.css">
+{% endblock %}
+{% block content %}{% endblock %}
+{% block js2 %}
+	<script src="/scripts/script.js"></script>
+{% endblock %}

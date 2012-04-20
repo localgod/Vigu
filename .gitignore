@@ -1,0 +1,5 @@
+lib/*
+!lib/zaphod
+.project
+.buildpath
+.settings

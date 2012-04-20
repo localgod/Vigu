@@ -1,0 +1,31 @@
+div.error             { background-image: url(/images/error.png); }
+div.user_error        { background-image: url(/images/error.png); }
+div.recoverable_error { background-image: url(/images/error.png); }
+div.parse             { background-image: url(/images/error.png); }
+div.core_error        { background-image: url(/images/core.png); }
+div.core_warning      { background-image: url(/images/core.png); }
+div.warning           { background-image: url(/images/warning.png); }
+div.user_warning      { background-image: url(/images/warning.png); }
+div.compile_error     { background-image: url(/images/compile.png); }
+div.compile_warning   { background-image: url(/images/compile.png); }
+div.deprecated        { background-image: url(/images/deprecated.png); }
+div.user_deprecated   { background-image: url(/images/deprecated.png); }
+div.strict            {	background-image: url(/images/strict.png); }
+div.notice            { background-image: url(/images/notice.png); }
+div.user_notice       { background-image: url(/images/notice.png); }
+
+td[role=gridcell] span.errorlevel_parse             { color: MediumVioletRed; font-weight: bold; }
+td[role=gridcell] span.errorlevel_compile_error     { color: FireBrick; font-weight: bold; }
+td[role=gridcell] span.errorlevel_compile_warning   { color: Sienna; font-weight: bold; }
+td[role=gridcell] span.errorlevel_core_error        { color: OrangeRed; font-weight: bold; }
+td[role=gridcell] span.errorlevel_core_warning      { color: DarkGoldenRod; font-weight: bold; }
+td[role=gridcell] span.errorlevel_recoverable_error { color: red; }
+td[role=gridcell] span.errorlevel_error             { color: red; }
+td[role=gridcell] span.errorlevel_user_error        { font-style: italic; color: red; }
+td[role=gridcell] span.errorlevel_warning           { color: maroon; }
+td[role=gridcell] span.errorlevel_user_warning      { font-style: italic; color: maroon; }
+td[role=gridcell] span.errorlevel_notice            { color: CornflowerBlue ; }
+td[role=gridcell] span.errorlevel_user_notice       { font-style: italic; color: CornflowerBlue ;}
+td[role=gridcell] span.errorlevel_strict            { color: black; }
+td[role=gridcell] span.errorlevel_deprecated        { color: Orange ; }
+td[role=gridcell] span.errorlevel_user_deprecated   { font-style: italic; color: Orange; }

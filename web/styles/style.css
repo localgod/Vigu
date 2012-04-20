@@ -1,0 +1,176 @@
+@IMPORT url("errors.css");
+
+div[role=application] {
+	margin: 0px;
+	padding: 0px;
+}
+
+div[role=region] {
+	margin: 0px;
+	padding: 0px;
+	width: 50%;
+	float: left;
+}
+
+.messageTitle {
+	font-family: Verdana, Arial, sans-serif;
+	margin: 5px 2px 2px 5px;
+	padding: 4px 0px 3px 5px;
+	font-size: 12px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.messageGrid {
+	text-overflow: ellipsis;
+}
+
+.message p {
+	margin: 5px 2px 2px 5px;
+	padding: 4px 0px 3px 5px;
+	font-size: 12px;
+	font-family: monospace;
+}
+
+.stacktrace p span:nth-child(1) span {
+	font-weight: bold;
+	color: fuchsia;
+}
+
+.stacktrace p span:nth-child(2) span {
+	font-weight: bold;
+	color: purple;
+}
+
+.stacktrace p span:nth-child(3) span {
+	
+	font-weight: bold;
+	color: green;
+}
+
+.stacktrace p span:nth-child(3) span:hover {
+	text-decoration: underline;
+	font-weight: bold;
+	color: green;
+}
+
+.stacktrace p span:nth-child(4) span {
+	font-weight: bold;
+	color: blue;
+}
+
+.varName {
+	font-weight: bold;
+}
+
+.varValue {
+	font-weight: bold;
+	color: green;
+}
+
+.context,.stacktrace {
+	margin: 5px 2px 2px 5px;
+	padding: 4px 0px 3px 5px;
+	font-size: 12px;
+	font-family: monospace;
+}
+
+div[role=region] div[role=heading] table {
+	margin: 5px 2px 2px 5px;
+	padding: 0px;
+	width: 100%;
+	border-spacing: 1px;
+}
+
+div.errorLevel {
+	height: 75px;
+	width: 75px;
+	margin: 0px;
+	padding: 0px;
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+
+div.count {
+	width: 75px;
+	font-size: 16px;
+	line-height: 25px;
+	height: 25px;
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+}
+
+div.icons {
+	float: left;
+}
+
+div.fields dl {
+	margin: 0px 5px 0px 55px;
+}
+
+div.fields dt {
+	font-weight: bold;
+	float: left;
+	padding: 5px 0px 5px 0px;
+	width: 100px;
+}
+
+div.fields dd {
+	padding: 5px 0px 5px 0px;
+	text-indent: 5px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+div.fields dd.file_search {
+	cursor: pointer;
+}
+
+div.fields dd.file_search:hover {
+	text-decoration: underline;
+}
+
+div[role=toolbar] {
+	margin: 5px 0px;
+	padding: 2px;
+	height: 28px;
+}
+
+div[role=toolbar] h1 {
+	margin: 0px;
+	padding: 2px;
+	float: left;
+	font-size: 20px;
+}
+
+div[role=toolbar] input[type=text] {
+	margin: 0px;
+	padding: 2px;
+	float: right;
+	border: 1px solid #AAAAAA;
+	font-size: 16px;
+	height: 22px;
+	width: 49%;
+}
+
+div[role=toolbar] button {
+	float: right;
+}
+
+table[role=grid] {
+	margin: 0px;
+	padding: 0px;
+}
+
+div[role=document] {
+	width: auto;
+	margin: 0px 0px 0px 5px;
+	padding: 0px;
+}
+
+.ui-widget {
+	font-size: 12px;
+}

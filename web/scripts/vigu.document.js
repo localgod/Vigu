@@ -2,7 +2,7 @@ if (typeof Vigu === 'undefined') {
 	var Vigu = {};
 }
 /**
- * Base object for all Vigu menu operations
+ * Base object for all Vigu document operations
  */
 Vigu.Document = (function($) {
 		return {
@@ -30,8 +30,22 @@ Vigu.Document = (function($) {
 						Vigu.Document.stacktraceSection(document, data.stacktrace);
 						Vigu.Document.contextSection(document, data.context);
 						document.appendTo(node);
+						
+						$(window).resize(function() {
+							Vigu.Document.setDocumentSize();
+						}).trigger('resize');
 					}
 				});
+			},
+			/**
+			 * Set the size of the document in the interface
+			 * 
+			 * @return {undefined}
+			 */
+			setDocumentSize : function() {
+				var position = $('[role=document]').position();
+				var newSize = $(window).height() - position.top -7;
+				$('[role=document]').css({'height':newSize});
 			},
 			/**
 			 * Generate the header block

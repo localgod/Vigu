@@ -169,6 +169,7 @@ div[role=document] {
 	width: auto;
 	margin: 0px 0px 0px 5px;
 	padding: 0px;
+	overflow: auto;
 }
 
 .ui-widget {

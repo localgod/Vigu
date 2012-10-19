@@ -1,48 +1,33 @@
 <?php
-
-require_once '../lib/PHP-Daemon/Core/Daemon.php';
-require_once '../lib/PHP-Daemon/Core/PluginInterface.php';
-require_once '../lib/PHP-Daemon/Core/Lock/LockInterface.php';
-require_once '../lib/PHP-Daemon/Core/Lock/Lock.php';
-require_once '../lib/PHP-Daemon/Core/Lock/File.php';
-require_once '../lib/PHP-Daemon/Core/Plugins/Ini.php';
-
+/**
+ * This file is part of the Vigu PHP error aggregation system.
+ *
+ * PHP version 5.3+
+ * 
+ * @category  ErrorAggregation
+ * @package   Vigu
+ * @author    Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ * @copyright 2012 Copyright Jens Riisom Schultz, Johannes Skov Frandsen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ * @link      https://github.com/localgod/Vigu
+ */
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/Daemon.php';
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/PluginInterface.php';
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/Lock/LockInterface.php';
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/Lock/Lock.php';
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/Lock/File.php';
+require_once dirname(__FILE__) . '/../lib/PHP-Daemon/Core/Plugins/Ini.php';
+require_once dirname(__FILE__) . '/RedisFunctions.php';
+/**
+ * The Vigu Daemon runs on the server, to process incoming errors.
+ * 
+ * @category ErrorAggregation
+ * @package  Vigu
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ */
 class ViguDaemon extends Core_Daemon {
-	/**
-	 * @var string
-	 */
-	const COUNTS_PREFIX = '|counts|';
-
-	/**
-	 * @var string
-	 */
-	const TIMESTAMPS_PREFIX = '|timestamps|';
-
-	/**
-	 * @var string
-	 */
-	const SEARCH_PREFIX = '|search|';
-
-	/**
-	 * The Redis connection for incoming data.
-	 *
-	 * @var Redis
-	 */
-	private $_incRedis;
-
-	/**
-	 * The Redis connection for storage.
-	 *
-	 * @var Redis
-	 */
-	private $_stoRedis;
-
-	/**
-	 * The Redis connection for indexing.
-	 *
-	 * @var Redis
-	 */
-	private $_indRedis;
+	/** @var RedisFunctions The redis functions used for Redis communication. */
+	private $_redis;
 
 	/**
 	 * The time the daemon was started, in microtime.
@@ -64,7 +49,7 @@ class ViguDaemon extends Core_Daemon {
 		$this->lock = new Core_Lock_File();
 		$this->lock->daemon_name = __CLASS__;
 		$this->lock->ttl = $this->loop_interval;
-		$this->lock->path = '/var/run';
+		$this->lock->path = '/var/run/';
 
 		parent::__construct();
 	}
@@ -81,37 +66,23 @@ class ViguDaemon extends Core_Daemon {
 	}
 
 	/**
-	 * This is where you implement any once-per-execution setup code.
+	 * Connects three Redis clients, and configures log, ttl and email notifications.
 	 *
 	 * @return null
-	 * @throws Exception
 	 */
 	protected function setup() {
-		if (isset($this->Ini['redis'])) {
-			$this->_incRedis = new Redis();
-			$this->_incRedis->connect($this->Ini['redis']['host'], $this->Ini['redis']['port'], $this->Ini['redis']['timeout']);
-			$this->_incRedis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-			$this->_incRedis->select(3);
-
-			$this->_stoRedis = new Redis();
-			$this->_stoRedis->connect($this->Ini['redis']['host'], $this->Ini['redis']['port'], $this->Ini['redis']['timeout']);
-			$this->_stoRedis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-			$this->_stoRedis->select(1);
-
-			$this->_indRedis = new Redis();
-			$this->_indRedis->connect($this->Ini['redis']['host'], $this->Ini['redis']['port'], $this->Ini['redis']['timeout']);
-			$this->_indRedis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-			$this->_indRedis->select(2);
-		} else {
-			$this->fatal_error('The configuration does not define a redis section.');
-		}
-
 		if (!isset($this->Ini['log'])) {
 			$this->fatal_error('The configuration does not define the \'log\' setting.');
 		}
 
 		if (!isset($this->Ini['ttl'])) {
 			$this->fatal_error('The configuration does not define the \'ttl\' setting.');
+		}
+
+		if (isset($this->Ini['redis'])) {
+			$this->_redis = new RedisFunctions($this->Ini['ttl'], $this->Ini['redis']['host'], $this->Ini['redis']['port'], $this->Ini['redis']['timeout']);
+		} else {
+			$this->fatal_error('The configuration does not define a redis section.');
 		}
 
 		if ($this->is_parent) {
@@ -127,6 +98,8 @@ class ViguDaemon extends Core_Daemon {
 	}
 
 	/**
+	 * Checks for incoming errors and processes them.
+	 *
 	 * This is where you implement the tasks you want your daemon to perform.
 	 * This method is called at the frequency defined by loop_interval.
 	 * If this method takes longer than 90% of the loop_interval, a Warning will be raised.
@@ -137,134 +110,16 @@ class ViguDaemon extends Core_Daemon {
 		/** @var float */
 		static $lastCleanUpTime = -999999999;
 
-		$this->_incRedis->select(3);
-
-		$incCount = $this->_incRedis->lSize('incoming');
+		$incCount = $this->_redis->getIncomingSize();
 		if ($incCount > 0) {
 			$this->log("$incCount elements in queue.");
+			$this->_redis->processMultiple($this->_redis->getIncoming(2000));
 		}
 
-		$count = 0;
-		while (($inc = $this->_incRedis->lPop('incoming')) && $count++ < 1000) {
-			list($hash, $timestamp) = $inc;
-			$this->_process($hash, $timestamp);
-			$this->_incRedis->del($hash);
-		}
-
-		if ($this->_upTime() - $lastCleanUpTime > 360) {
-			$this->_cleanIndexes();
+		if ($this->_upTime() - $lastCleanUpTime > $this->Ini['ttl']) {
+			$this->_redis->cleanIndexes();
 			$lastCleanUpTime = $this->_upTime();
 		}
-	}
-
-	/**
-	 * Process an incoming error.
-	 *
-	 * @param string  $hash
-	 * @param integer $timestamp
-	 *
-	 * @return null
-	 */
-	protected function _process($hash, $timestamp) {
-		$this->_incRedis->select(3);
-
-		if (($line = $this->_incRedis->get($hash)) === false) {
-			$line = null;
-		}
-
-		$line = $this->_store($hash, $timestamp, $line);
-		$this->_index($hash, $timestamp, $line);
-	}
-
-	/**
-	 * Store an incoming error.
-	 *
-	 * @param string     $hash
-	 * @param integer    $timestamp
-	 * @param array|null $line
-	 *
-	 * @return array The stored error.
-	 */
-	protected function _store($hash, $timestamp, array $line = null) {
-		$this->_stoRedis->select(1);
-
-		if ($line === null) {
-			$line = $this->_stoRedis->get($hash);
-		}
-
-		if ($oldLine = $this->_stoRedis->get($hash)) {
-			if ($oldLine['last'] < $timestamp) {
-				$line['last'] = $timestamp;
-			}
-			if ($oldLine['first'] > $timestamp) {
-				$line['first'] = $timestamp;
-			} else {
-				$line['first'] = $oldLine['first'];
-			}
-			if ($oldLine['last'] < $timestamp) {
-				$line['last'] = $timestamp;
-			} else {
-				$line['last'] = $oldLine['last'];
-			}
-
-			$this->_stoRedis->setex($hash, $this->Ini['ttl'] + 360, $line);
-		} else {
-			$line['first'] = $timestamp;
-			$line['last'] = $timestamp;
-			$this->_stoRedis->setex($hash, $this->Ini['ttl'] + 360, $line);
-		}
-
-		return $line;
-	}
-
-	/**
-	 * Index an incoming error.
-	 *
-	 * @param string  $hash
-	 * @param integer $timestamp
-	 * @param array   $line
-	 *
-	 * @return null
-	 */
-	protected function _index($hash, $timestamp, array $line) {
-		$this->_indRedis->select(2);
-
-		$count = $this->_indRedis->zIncrBy(self::COUNTS_PREFIX, 1, $hash);
-		$oldLastTimestamp = $this->_indRedis->zScore(self::TIMESTAMPS_PREFIX, $hash);
-
-		$this->_indRedis->multi(Redis::PIPELINE);
-
-		if ($timestamp > $oldLastTimestamp) {
-			$this->_indRedis->zAdd(self::TIMESTAMPS_PREFIX, $timestamp, $hash);
-		} else {
-			$timestamp = $oldLastTimestamp;
-		}
-		foreach (self::_splitPath($line['file']) as $word) {
-			$this->_indRedis->zAdd(self::TIMESTAMPS_PREFIX . strtolower($word), $timestamp, $hash);
-			$this->_indRedis->zAdd(self::COUNTS_PREFIX . strtolower($word), $count, $hash);
-		}
-		$this->_indRedis->exec();
-	}
-
-	private function _cleanIndexes() {
-		$timeStart = microtime(true);
-
-		$this->log('Cleaning indexes.');
-
-		$this->_indRedis->select(2);
-		$hashes = $this->_indRedis->zRangeByScore(self::TIMESTAMPS_PREFIX, 0, time() - $this->Ini['ttl']);
-
-		$indexes = $this->_indRedis->keys('*');
-
-		$this->_indRedis->multi(Redis::PIPELINE);
-		foreach ($hashes as $hash) {
-			foreach ($indexes as $index) {
-				$this->_indRedis->zRem($index, $hash);
-			}
-		}
-		$this->_indRedis->exec();
-
-		$this->log(count($hashes) . ' elements removed in ' . sprintf('%.3f seconds', microtime(true) - $timeStart));
 	}
 
 	/**
@@ -274,17 +129,6 @@ class ViguDaemon extends Core_Daemon {
 	 */
 	private function _upTime() {
 		return microtime(true) - $this->_startTime;
-	}
-
-	/**
-	 * Split a path to an array of words.
-	 *
-	 * @param string $path
-	 *
-	 * @return array
-	 */
-	private static function _splitPath($path) {
-		return array_filter(preg_split('#[/\\\\\\\.: -]#', $path));
 	}
 
 	/**

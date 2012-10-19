@@ -1,20 +1,22 @@
 <?php
 /**
- * Dummy test class.
+ * This file is part of the Vigu PHP error aggregation system.
  *
- * PHP version 5
- *
- * @category Vigu
- * @package  Vigu
- * @author   Johannes Skov Frandsen <localgod@heaven.dk>
+ * PHP version 5.3+
+ * 
+ * @category  Test
+ * @package   Vigu
+ * @author    Johannes Skov Frandsen <localgod@heaven.dk>
+ * @copyright 2012 Copyright Jens Riisom Schultz, Johannes Skov Frandsen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ * @link      https://github.com/localgod/Vigu
  */
 /**
  * Dummy test class.
  * 
- * @category   Vigu
- * @package    Vigu
- * @subpackage Test
- * @author     Johannes Skov Frandsen <localgod@heaven.dk>
+ * @category Test
+ * @package  Vigu
+ * @author   Johannes Skov Frandsen <localgod@heaven.dk>
  */
 class DummyTest extends PHPUnit_Framework_TestCase {
 
@@ -45,5 +47,4 @@ class DummyTest extends PHPUnit_Framework_TestCase {
 	public function testDummy() {
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
-
 }

@@ -1,6 +1,23 @@
 <?php
 /**
- * Include this file through php.ini to gather errors from a server.
+ * This file is part of the Vigu PHP error aggregation system.
+ *
+ * PHP version 5.3+
+ * 
+ * @category  ErrorAggregation
+ * @package   Vigu
+ * @author    Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ * @copyright 2012 Copyright Jens Riisom Schultz, Johannes Skov Frandsen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ * @link      https://github.com/localgod/Vigu
+ */
+/**
+ * This is the Vigu error handler.
+ * This class gathers errors during runtime execution, and sends them to a Redis server.
+ *
+ * @category ErrorAggregation
+ * @package  Vigu
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class ViguErrorHandler {
 	/**
@@ -42,12 +59,26 @@ class ViguErrorHandler {
 	private static $_host;
 
 	/**
+	 * The last logged key.
+	 *
+	 * @var string
+	 */
+	private static $_lastLoggedKey;
+
+	/**
+	 * True if this handler is enabled.
+	 *
+	 * @var boolean
+	 */
+	private static $_enabled = false;
+
+	/**
 	 * Read and parse vigu.ini.
 	 *
 	 * @return boolean True on success, false on failure.
 	 */
 	public static function readConfig() {
-		if (file_exists($iniFile = dirname(__FILE__) . '/vigu.ini') || file_exists($iniFile = dirname(__FILE__) . '/../vigu.ini')) {
+		if (file_exists($iniFile = dirname(__FILE__) . '/vigu.ini')) {
 			$config = parse_ini_file($iniFile, true);
 
 			if (isset($config['redis'])) {
@@ -56,10 +87,27 @@ class ViguErrorHandler {
 				trigger_error('Vigu shutdown handler could not determine the Redis connection data, from vigu.ini.', E_USER_NOTICE);
 				return false;
 			}
+
+			if (isset($config['enable_shutdown_handler']) && $config['enable_shutdown_handler'] == 1) {
+				self::$_enabled = true;
+			}
 			return true;
 		} else {
 			trigger_error('Vigu shutdown handler could not locate vigu.ini.', E_USER_NOTICE);
 			return false;
+		}
+	}
+
+	/**
+	 * Hooks the error, exception and shutdown handlers up, if the shutdown handler is enabled in vigu.ini.
+	 *
+	 * @return null
+	 */
+	public static function hookupIfEnabled() {
+		if (self::$_enabled) {
+			register_shutdown_function('ViguErrorHandler::shutdown');
+			set_error_handler('ViguErrorHandler::error');
+			set_exception_handler('ViguErrorHandler::exception');
 		}
 	}
 
@@ -74,15 +122,13 @@ class ViguErrorHandler {
 
 		if ($lastError && !preg_match('/^Uncaught exception /', $lastError['message'])) {
 			// Make sure that the last error has not already been logged
-			if ($lastLoggedError) {
-				if ($lastLoggedError
-					&& $lastError['file'] == $lastLoggedError['file']
-					&& $lastError['line'] == $lastLoggedError['line']
-					&& $lastError['message'] == $lastLoggedError['message']
-					&& self::_errnoToString($lastError['type']) == $lastLoggedError['level']) {
-					self::_send();
-					return;
-				}
+			if ($lastLoggedError
+				&& $lastError['file'] == $lastLoggedError['file']
+				&& $lastError['line'] == $lastLoggedError['line']
+				&& $lastError['message'] == $lastLoggedError['message']
+				&& self::_errnoToString($lastError['type']) == $lastLoggedError['level']) {
+				self::_send();
+				return;
 			}
 
 			self::_logError($lastError['type'], $lastError['message'], $lastError['file'], $lastError['line']);
@@ -92,18 +138,20 @@ class ViguErrorHandler {
 	}
 
 	/**
-	 * Handle any soft errors.
+	 * Handle any soft errors, ignoring @-suppressed errors.
 	 *
 	 * @param integer $errno      Error number.
 	 * @param string  $errstr     Message.
 	 * @param string  $errfile    File.
 	 * @param integer $errline    Line number.
-	 * @param array   $errcontext Ignored.
+	 * @param array   $errcontext The context when the error occured.
 	 *
-	 * @return boolean Returns false to continue error handling by other error handlers.
+	 * @return boolean Always returns false to continue error handling by other error handlers, and PHP itself.
 	 */
 	public static function error($errno = 0, $errstr = '', $errfile = '', $errline = 0, $errcontext = null) {
-		self::_logError($errno, $errstr, $errfile, $errline, $errcontext, debug_backtrace(false));
+		if (error_reporting() !== 0) {
+			self::_logError($errno, $errstr, $errfile, $errline, $errcontext, debug_backtrace(false));
+		}
 
 		return false;
 	}
@@ -125,7 +173,13 @@ class ViguErrorHandler {
 			$exception->getTrace()
 		);
 
-		throw $exception;
+		// Exceptions thrown in exception handlers are useless prior to 5.3.6, and <5.3 does not support inner exceptions.
+		if (defined('PHP_MAJOR_VERSION') && PHP_MAJOR_VERSION >= 5 && PHP_MINOR_VERSION >= 3 && PHP_RELEASE_VERSION >= 6) {
+			$ex = new Exception('Uncaught exception \'' . get_class($exception) . '\'', 42, $exception);
+			throw $ex;
+		} else {
+			trigger_error('Uncaught exception \'' . get_class($exception) . "' with message '{$exception->getMessage()}' in {$exception->getFile()} on line {$exception->getLine()}", E_USER_ERROR);
+		}
 	}
 
 	/**
@@ -190,22 +244,31 @@ class ViguErrorHandler {
 	 * @return void
 	 */
 	private static function _logError($errno, $message, $file, $line, $context = array(), $stacktrace = array()) {
-		array_shift($stacktrace);
+		$level = is_string($errno) ? $errno : self::_errnoToString($errno);
+		$host = self::_getHost();
 
-		self::$_log[] = array(
-			'host'       => self::_getHost(),
-			'timestamp'  => time(),
-			'level'      => is_string($errno) ? $errno : self::_errnoToString($errno),
-			'message'    => $message,
-			'file'       => $file,
-			'line'       => $line,
-			'context'    => self::_cleanContext($context),
-			'stacktrace' => self::_cleanStacktrace($stacktrace),
-		);
+		$key = md5($level . self::_getHost() . $file . $line . $message);
 
-		if (count(self::$_log) >= 100) {
-			self::_send();
+		if (!isset(self::$_log[$key])) {
+			array_shift($stacktrace);
+			self::$_log[$key] = array(
+				'host'       => $host,
+				'level'      => $level,
+				'message'    => $message,
+				'file'       => $file,
+				'line'       => $line,
+				'context'    => self::_cleanContext($context),
+				'stacktrace' => self::_cleanStacktrace($stacktrace),
+				'count'      => 1,
+			);
+
+			if (count(self::$_log) >= 100) {
+				self::_send();
+			}
+		} else {
+			self::$_log[$key]['count']++;
 		}
+		self::$_lastLoggedKey = $key;
 	}
 
 	/**
@@ -215,7 +278,7 @@ class ViguErrorHandler {
 	 */
 	private static function _getLastLoggedError() {
 		if (!empty(self::$_log)) {
-			return self::$_log[count(self::$_log) - 1];
+			return self::$_log[self::$_lastLoggedKey];
 		} else {
 			return null;
 		}
@@ -224,7 +287,7 @@ class ViguErrorHandler {
 	/**
 	 * Clean a stacktrace, stripping class instances and array contents.
 	 *
-	 * @param array &$stacktrace
+	 * @param array &$stacktrace Stacktrace
 	 *
 	 * @return array The cleaned stacktrace.
 	 */
@@ -267,7 +330,7 @@ class ViguErrorHandler {
 	/**
 	 * Clean a context array of superglobals, class instances and arrays.
 	 *
-	 * @param array $context
+	 * @param array $context Execution context
 	 *
 	 * @return array The cleaned context.
 	 */
@@ -323,34 +386,31 @@ class ViguErrorHandler {
 			if (class_exists('Redis')) {
 				$redis = new Redis();
 				try {
-					if ($redis->connect(self::$_redisConnectionData['host'], self::$_redisConnectionData['port'], self::$_redisConnectionData['timeout'])) {
+					if ($redis->pconnect(self::$_redisConnectionData['host'], self::$_redisConnectionData['port'], self::$_redisConnectionData['timeout'])) {
 						$redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
 						$redis->select(3);
-
+						$time = time();
 						$redis->multi(Redis::PIPELINE);
-						foreach (self::$_log as $line) {
-							$md5 = md5($line['level'] . $line['host'] . $line['file'] . $line['line'] . $line['message']);
-							$redis->rPush('incoming', array($md5, $line['timestamp']));
-							unset($line['timestamp']);
-							$redis->setnx($md5, $line);
+						foreach (self::$_log as $md5 => $line) {
+							$redis->rPush('incoming', array($md5, $time, $line['count']));
+							unset($line['count']);
+							$redis->set($md5, $line);
 						}
 						$redis->exec();
 						$redis->close();
 					}
+					unset($redis);
 				} catch (RedisException $ex) {
 					// Ignore
 				}
 			}
 			self::$_log = array();
 		}
-
 	}
 }
 
 if (ViguErrorHandler::readConfig()) {
-	register_shutdown_function('ViguErrorHandler::shutdown');
-	set_error_handler('ViguErrorHandler::error');
-	set_exception_handler('ViguErrorHandler::exception');
+	ViguErrorHandler::hookupIfEnabled();
 } else {
 	trigger_error('Vigu could not be configured. Data will not be gathered.', E_USER_WARNING);
 }

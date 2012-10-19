@@ -1,6 +1,22 @@
 <?php
 /**
+ * This file is part of the Vigu PHP error aggregation system.
+ *
+ * PHP version 5.3+
+ * 
+ * @category  ErrorAggregation
+ * @package   Vigu
+ * @author    Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
+ * @copyright 2012 Copyright Jens Riisom Schultz, Johannes Skov Frandsen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ * @link      https://github.com/localgod/Vigu
+ */
+/**
  * Logged lines as a model.
+ * 
+ * @category ErrorAggregation
+ * @package  Vigu
+ * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class ApiPublicModelLine extends ApiPublicModel {
 	/**
@@ -17,6 +33,23 @@ class ApiPublicModelLine extends ApiPublicModel {
 	 * @var string
 	 */
 	const SEARCH_PREFIX = '|search|';
+
+	/**
+	 * @var string
+	 */
+	const LEVEL_PREFIX = '|level|';
+
+	/**
+	 * @var string
+	 */
+	const WORD_PREFIX = '|word|';
+
+	/**
+	 * The name of the list of handled keys.
+	 *
+	 * @var string
+	 */
+	const HANDLED_INDEX = '|handled|';
 
 	/**
 	 * @var Redis
@@ -79,9 +112,14 @@ class ApiPublicModelLine extends ApiPublicModel {
 	private $_count;
 
 	/**
+	 * @var boolean
+	 */
+	private $_isHandled;
+
+	/**
 	 * Get an existing Line, by key.
 	 *
-	 * @param string $key
+	 * @param string $key Key name
 	 *
 	 * @return null
 	 *
@@ -203,91 +241,181 @@ class ApiPublicModelLine extends ApiPublicModel {
 	}
 
 	/**
+	 * Get whether or not this line is handled.
+	 *
+	 * @return boolean True if the line is handled.
+	 */
+	public function isHandled() {
+		if (!isset($this->_isHandled)) {
+			$redis = self::_getIndexingRedis();
+			$this->_isHandled = $redis->zScore(self::HANDLED_INDEX, $this->getKey()) == 1.0;
+		}
+		return $this->_isHandled;
+	}
+
+	/**
+	 * Get an error of all registered error levels.
+	 *
+	 * @return array
+	 */
+	public static function getAllLevels() {
+		$redis = self::_getIndexingRedis();
+
+		$levelIndexes = $redis->keys(self::LEVEL_PREFIX . '*');
+		foreach ($levelIndexes as &$level) {
+			$level = substr($level, strlen(self::LEVEL_PREFIX));
+		}
+
+		return $levelIndexes;
+	}
+
+	/**
 	 * Get lines ordered by their last timestamp, descending.
 	 *
-	 * @param integer $offset
-	 * @param integer $limit
-	 * @param string  $path   An optional path search string.
+	 * @param integer $offset  Result offset
+	 * @param integer $limit   Result limit
+	 * @param string  $path    An optional path search string.
+	 * @param string  $level   An optional error level to filter by.
+	 * @param boolean $handled Get handled errors?
 	 *
 	 * @return ApiPublicModelLine[]
+	 * @throws RuntimeException if failing to create a new ApiPublicModelLine
 	 */
-	public static function getMostRecent($offset, $limit, $path = null) {
-		return self::_getByPrefix(self::TIMESTAMPS_PREFIX, $offset, $limit, $path);
+	public static function getMostRecent($offset, $limit, $path = null, $level = null, $handled = false) {
+		return self::_getByPrefix(self::TIMESTAMPS_PREFIX, $offset, $limit, $path, $level, $handled);
 	}
 
 	/**
 	 * Get lines ordered by count, descending.
 	 *
-	 * @param integer $offset
-	 * @param integer $limit
-	 * @param string  $path   An optional path search string.
+	 * @param integer $offset  Result offset
+	 * @param integer $limit   Result limit
+	 * @param string  $path    An optional path search string.
+	 * @param string  $level   An optional error level to filter by.
+	 * @param boolean $handled Get handled errors?
 	 *
 	 * @return ApiPublicModelLine[]
+	 * @throws RuntimeException if failing to create a new ApiPublicModelLine
 	 */
-	public static function getMostTriggered($offset, $limit, $path = null) {
-		return self::_getByPrefix(self::COUNTS_PREFIX, $offset, $limit, $path);
+	public static function getMostTriggered($offset, $limit, $path = null, $level = null, $handled = false) {
+		return self::_getByPrefix(self::COUNTS_PREFIX, $offset, $limit, $path, $level, $handled);
 	}
 
 	/**
 	 * Get the total number of lines.
 	 *
-	 * @param string $path An optional path search string.
+	 * @param string  $path    An optional path search string.
+	 * @param string  $level   An optional error level to filter by.
+	 * @param boolean $handled Get handled errors?
 	 *
 	 * @return integer
 	 */
-	public static function getTotal($path = null) {
+	public static function getTotal($path = null, $level = null, $handled = false) {
 		$redis = self::_getIndexingRedis();
 
-		if ($path === null) {
-			return $redis->zCard(self::COUNTS_PREFIX);
-		} else {
-			$search = self::_splitPath($path);
-			foreach ($search as &$val) {
-				$val = self::COUNTS_PREFIX . strtolower($val);
+		$id = uniqid(self::SEARCH_PREFIX, true);
+
+		$zinters = array(self::COUNTS_PREFIX);
+
+		if ($path !== null) {
+			foreach (self::_splitPath($path) as $val) {
+				$zinters[] = self::WORD_PREFIX . strtolower($val);
 			}
-
-			$id = uniqid(self::SEARCH_PREFIX, true);
-			$total = $redis->zInter($id, $search);
-			$redis->del($id);
-
-			return $total;
 		}
+
+		if ($level !== null) {
+			$zinters[] = self::LEVEL_PREFIX . $level;
+		}
+
+		$redis->zInter($id, $zinters);
+
+		if ($handled == false) {
+			foreach ($redis->zRange(self::HANDLED_INDEX, 0, -1) as $hash) {
+				$redis->zRem($id, $hash);
+			}
+		}
+
+		$total = $redis->zCard($id);
+		
+		$redis->del($id);
+
+		return $total;
 	}
 
 	/**
 	 * Get lines ordered by timestamp or count, descending.
 	 *
-	 * @param integer $offset
-	 * @param integer $limit
-	 * @param string  $path   An optional path search string.
+	 * @param string  $prefix  The index prefix.
+	 * @param integer $offset  Result offset
+	 * @param integer $limit   Result limit
+	 * @param string  $path    An optional path search string.
+	 * @param string  $level   An optional error level to filter by.
+	 * @param boolean $handled Get handled errors?
 	 *
 	 * @return ApiPublicModelLine[]
 	 */
-	private static function _getByPrefix($prefix, $offset, $limit, $path = null) {
+	private static function _getByPrefix($prefix, $offset, $limit, $path = null, $level = null, $handled = false) {
 		$redis = self::_getIndexingRedis();
 		$start = $offset;
 		$end   = $start + ($limit - 1);
 
-		$result = array();
-		if ($path === null) {
-			foreach ($redis->zRevRange($prefix, $start, $end) as $key) {
-				$result[] = new ApiPublicModelLine($key);
-			}
-		} else {
-			$search = self::_splitPath($path);
-			foreach ($search as &$val) {
-				$val = $prefix . strtolower($val);
-			}
+		$id = uniqid(self::SEARCH_PREFIX, true);
 
-			$id = uniqid(self::SEARCH_PREFIX, true);
-			$redis->zInter($id, $search);
-			foreach ($redis->zRevRange($id, $start, $end) as $key) {
-				$result[] = new ApiPublicModelLine($key);
+		$zinters = array($prefix);
+
+		if ($path !== null) {
+			foreach (self::_splitPath($path) as $val) {
+				$zinters[] = self::WORD_PREFIX . strtolower($val);
 			}
-			$redis->del($id);
 		}
 
+		if ($level !== null) {
+			$zinters[] = self::LEVEL_PREFIX . $level;
+		}
+
+		$redis->zInter($id, $zinters);
+
+		if ($handled == false) {
+			foreach ($redis->zRange(self::HANDLED_INDEX, 0, -1) as $hash) {
+				$redis->zRem($id, $hash);
+			}
+		}
+
+		$result = array();
+		foreach ($redis->zRevRange($id, $start, $end) as $key) {
+			$result[] = new ApiPublicModelLine($key);
+		}
+
+		$redis->del($id);
+
 		return $result;
+	}
+
+
+	/**
+	 * Mark the line as handled.
+	 *
+	 * @return null
+	 */
+	public function handle() {
+		$redis = self::_getIndexingRedis();
+
+		$redis->zAdd(self::HANDLED_INDEX, 1.0, $this->getKey());
+
+		$this->_isHandled = true;
+	}
+
+	/**
+	 * Unmark the line as handled.
+	 *
+	 * @return null
+	 */
+	public function unhandle() {
+		$redis = self::_getIndexingRedis();
+
+		$redis->zRem(self::HANDLED_INDEX, $this->getKey());
+
+		$this->_isHandled = false;
 	}
 
 	/**
@@ -344,7 +472,7 @@ class ApiPublicModelLine extends ApiPublicModel {
 	/**
 	 * Split a path to an array of words.
 	 *
-	 * @param string $path
+	 * @param string $path Input path
 	 *
 	 * @return array
 	 */

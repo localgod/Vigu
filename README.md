@@ -1,29 +1,37 @@
 [![Build Status](https://secure.travis-ci.org/localgod/Vigu.png?branch=master)](http://travis-ci.org/localgod/Vigu)
-
 Vigu
 ====
 
-*Authors* [Jens Riisom Schultz](mailto:ibber_of_crew42@hotmail.com), [Johannes Skov Frandsen](mailto:localgod@heaven.dk)
+*Authors* [Jens Riisom Schultz](mailto:ibber_of_crew42@hotmail.com)(_backend_), [Johannes Skov Frandsen](mailto:localgod@heaven.dk)(_frontend_)
+
 *Since*   2012-03-20
 
 Vigu is a PHP error aggregation system, which collects all possible PHP errors and aggregates them in a Redis database. It includes a frontend to browse the data.
 
-This project is based on [Zaphod](https://github.com/Ibmurai/zaphod) and depends on several other projects:
-  * [Redis](http://redis.io) 
+This project is based on [Zaphod](https://github.com/Ibmurai/zaphod) and uses several other projects:
+
+  * [Redis](http://redis.io)
   * [The Frood VC framework](https://github.com/Ibmurai/frood)
   * [FroodTwig](https://github.com/Ibmurai/froodTwig)
   * [PHP-Daemon](https://github.com/shaneharter/PHP-Daemon)
   * [Jquery](http://jquery.com/)
   * [jqGrid](http://www.trirand.com/blog/)
-
+  * [git](http://git-scm.com/)
+  
 
 Requirements
 ------------
 
-  * You need apache mod_rewrite.
-  * You need the `pecl_http` PHP extension.
-  * You need the [`phpredis`](https://github.com/nicolasff/phpredis) PHP extension.
+  * `git` is required for installation.
+  * You need apache `mod_rewrite`.
+  * You need the [phpredis](https://github.com/nicolasff/phpredis) PHP extension.
   * You need a Redis server, dedicated to this application.
+
+Optionally you can use a gearman based variant of the daemon, adding the following dependencies:
+
+  * [Gearman](http://gearman.org/)
+  * [pecl_gearman](http://pecl.php.net/package/gearman)
+  * [php-gearman-admin](https://github.com/Ibmurai/php-gearman-admin)
 
 
 Documentation
@@ -35,10 +43,11 @@ Documentation
 Installing
 ----------
 
-  * Clone vigu from git.
+  * Clone vigu from git, i.e. `git clone http://github.com/Ibmurai/vigu.git vigu`
   * Run `install.php` from command line.
   * Copy `vigu.ini.dist` to `vigu.ini` and edit it.
   * Make a vhost, to point at the root of vigu or the `web/` folder, or however you choose to serve the site.
+  * Set the daemon up, using `php handlers/daemon.php -I`. The daemon should be running at all times, but it may ONLY run on the Vigu server.
   * Copy `vigu.ini` to `handlers/vigu.ini`.
   * Include `handlers/shutdown.php` before anything else, preferably through php.ini's `auto_prepend_file` directive. It has no dependencies besides it's configuration file, which must exist next to it, so you can safely deploy it alone, to all your servers.
 

@@ -1,45 +1,81 @@
+/**
+ * This file is part of the Vigu PHP error aggregation system.
+ * @link https://github.com/localgod/Vigu
+ *
+ * @copyright 2012 Copyright Jens Riisom Schultz, Johannes Skov Frandsen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ */
 if (typeof Vigu === 'undefined') {
 	var Vigu = {};
 }
 /**
- * Base object for all Vigu document operations
+ * Base object for all Vigu menu operations
  */
 Vigu.Document = (function($) {
 		return {
 			/**
 			 * Create the error document
-			 * 
+			 *
 		     * @param {jQuery} Dom node
 			 * @param {Integer} Id of the document to render
-			 * 
-			 * @return {Object}
+			 *
+			 * @return {undefined}
 			 */
 			render : function(node, key) {
+				if (key != undefined) {
+					$.ajax({
+						url : '/api/log/details',
+						dataType : 'json',
+						data : {
+							key : key
+						},
+						success : function(data) {
+							$("[role=document]").remove();
+							if (data['error'] === undefined) {
+								var data = data['details'];
+								var document = $('<div>').attr('role', 'document').addClass('ui-widget ui-widget-content ui-corner-all');
+								Vigu.Document.headerSection(document, data);
+								Vigu.Document.messageSection(document, data.message);
+								Vigu.Document.stacktraceSection(document, data.stacktrace);
+								Vigu.Document.contextSection(document, data.context);
+								document.appendTo(node);
+
+								$(window).resize(function() {
+									Vigu.Document.setDocumentSize();
+								}).trigger('resize');
+							} else {
+								Vigu.notify(data['error']);
+							}
+						}
+					});
+				} else {
+					$("[role=document]").remove();
+				}
+			},
+			/**
+			 * Set the handled status for an error
+			 *
+			 * @param {boolean}  handled   Has this error been handled
+			 * @param {string}   key       The key of the error
+			 * @param {function} onSuccess Call this when the request is successful.
+			 *
+			 * @return undefined
+			 */
+			setHandled : function(handled, key, onSuccess) {
+				var url = handled ? '/api/log/handle' : '/api/log/un_handle';
 				$.ajax({
-					url : '/api/log/details',
+					url : url,
 					dataType : 'json',
-					data : {
-						key : key
+					data: { key: key },
+					error : function() {
+						Vigu.notify('Setting the handled status failed');
 					},
-					success : function(data) {
-						$("[role=document]").remove();
-						var data = data['details'];
-						var document = $('<div>').attr('role', 'document').addClass('ui-widget ui-widget-content ui-corner-all');
-						Vigu.Document.headerSection(document, data);
-						Vigu.Document.messageSection(document, data.message);
-						Vigu.Document.stacktraceSection(document, data.stacktrace);
-						Vigu.Document.contextSection(document, data.context);
-						document.appendTo(node);
-						
-						$(window).resize(function() {
-							Vigu.Document.setDocumentSize();
-						}).trigger('resize');
-					}
+					success : onSuccess
 				});
 			},
 			/**
 			 * Set the size of the document in the interface
-			 * 
+			 *
 			 * @return {undefined}
 			 */
 			setDocumentSize : function() {
@@ -49,41 +85,60 @@ Vigu.Document = (function($) {
 			},
 			/**
 			 * Generate the header block
-			 * 
+			 *
 			 * @param {jQuery} node Node
 			 * @param {Object} data Document data
-			 * 
+			 *
 			 * @return undefined
 			 */
 			headerSection : function(node, data) {
 				var title = data.level;
 				var level = data.level.toLowerCase().replace(' error', '_error').replace(' warning', '_warning').replace(' notice', '_notice');
-				$('<div>').addClass('ui-widget-header ui-corner-all ui-helper-clearfix messageTitle').append($('<span>').text(title).attr('title', title)).appendTo(node);
+				$('<div>')
+					.addClass('ui-widget-header ui-corner-all ui-helper-clearfix messageTitle')
+					.append($('<label>')
+							.text('Handled').append($('<input type="checkbox">')
+								.attr('checked', data.handled == true ? 'checked' : null)
+								.change(function(){
+									if ($(this).is(':checked')) {
+										Vigu.notify('Error marked as handled');
+										Vigu.Document.setHandled(true, data.key, Vigu.Grid.reload);
+									} else {
+										Vigu.notify('Error unmarked as handled');
+										Vigu.Document.setHandled(false, data.key, Vigu.Grid.reload);
+									}
+								})))
+					.append($('<span>')
+						.text(title)
+						.attr('title', title))
+					.appendTo(node);
 				var left = $('<div>').addClass('icons').appendTo(node);
 				var right = $('<div>').addClass('fields').appendTo(node);
-				$('<div>').addClass(level).addClass('errorLevel').appendTo(left);
+				$('<div>').addClass(level).addClass('error_level').appendTo(left);
 				$('<div>').addClass('count').text(data.count).appendTo(left);
 				var dl = $('<dl>');
 				$('<dt>').text('Last (First)').appendTo(dl);
-				$('<dd>').text(data.last + ' (' + data.first + ')').attr('title', data.last + '' + data.first + ')').appendTo(dl); 
+				$('<dd>').text(data.last + ' (' + data.first + ')').attr('title', data.last + '' + data.first + ')').appendTo(dl);
 				$('<dt>').text('Frequency').appendTo(dl);
-				$('<dd>').text(data.frequency).attr('title', data.frequency).appendTo(dl);
+				$('<dd>').text(data.frequency.toFixed(1) + ' per hour').attr('title', data.frequency).appendTo(dl);
 				$('<dt>').text('File').appendTo(dl);
 				$('<dd>').text(data.file).addClass('file_search').attr('title', data.file).click(function(){
-				     Vigu.Grid.parameters.path = data.file;
-				     $('input[name="search"]').val(data.file);
-				     Vigu.Grid.reload();
-					}).appendTo(dl);
+				    Vigu.Grid.parameters.path = data.file;
+				    $('input[name="search"]').val(data.file);
+					Vigu.Toolbar.updateSearchReset();
+
+				    Vigu.Grid.reload();
+				}).appendTo(dl);
 				$('<dt>').text('Line').appendTo(dl);
 				$('<dd>').text(data.line).appendTo(dl);
 				dl.appendTo(right);
 			},
 			/**
 			 * Generate the message block
-			 * 
+			 *
 			 * @param {jQuery} node    Node
 			 * @param {Object} message Massage
-			 * 
+			 *
 			 * @return undefined
 			 */
 			messageSection : function(node, message) {
@@ -99,10 +154,10 @@ Vigu.Document = (function($) {
 			},
 			/**
 			 * Generate the stacktrace block
-			 * 
+			 *
 			 * @param {jQuery} node       Node
 			 * @param {Object} stacktrace Stacktrace
-			 * 
+			 *
 			 * @return undefined
 			 */
 			stacktraceSection : function(node, stacktrace) {
@@ -119,10 +174,10 @@ Vigu.Document = (function($) {
 			},
 			/**
 			 * Generate the context block
-			 * 
+			 *
 			 * @param {jQuery} node    Node
 			 * @param {Object} context Context
-			 * 
+			 *
 			 * @return undefined
 			 */
 			contextSection : function(node, context) {
@@ -140,10 +195,10 @@ Vigu.Document = (function($) {
 			},
 			/**
 			 * Generate a stacktrace line
-			 * 
+			 *
 			 * @param {jQuery} node Node
 			 * @param {String} line Line
-			 * 
+			 *
 			 * @return undefined
 			 */
 			_stLine : function(node, line) {
@@ -159,10 +214,10 @@ Vigu.Document = (function($) {
 			},
 			/**
 			 * Generate the linenumber element in a stacktrace line
-			 * 
+			 *
 			 * @param {jQuery} node Node
 			 * @param {String} line Line number
-			 * 
+			 *
 			 * @return undefined
 			 */
 			_stLineNumber : function(node, line) {
@@ -174,14 +229,14 @@ Vigu.Document = (function($) {
 					)
 					.appendTo(node);
 				}
-			}, 
+			},
 			/**
 			 * Generate the function element in a stacktrace line
-			 * 
+			 *
 			 * @param {jQuery} node         Node
 			 * @param {String} functionName Function name
 			 * @param {String} functionType Function type
-			 * 
+			 *
 			 * @return undefined
 			 */
 			_stFunction : function(node, functionName, functionType) {
@@ -198,13 +253,13 @@ Vigu.Document = (function($) {
 						)
 						.appendTo(node);
 				}
-			}, 
+			},
 			/**
 			 * Generate the class element in a stacktrace line
-			 * 
+			 *
 			 * @param {jQuery} node      Node
 			 * @param {String} className Class name
-			 * 
+			 *
 			 * @return undefined
 			 */
 			_stClass : function(node, className) {
@@ -221,13 +276,13 @@ Vigu.Document = (function($) {
 						)
 					.appendTo(node);
 				}
-			}, 
+			},
 			/**
 			 * Generate the path element in a stacktrace line
-			 * 
+			 *
 			 * @param {jQuery} node Node
 			 * @param {String} path Path
-			 * 
+			 *
 			 * @return undefined
 			 */
 			_stPath : function(node, path) {

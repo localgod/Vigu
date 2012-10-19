@@ -22,6 +22,19 @@ div[role=region] {
 	overflow: hidden;
 }
 
+div.messageTitle label {
+	float: right;
+	vertical-align: baseline;
+	line-height: 15px;
+	font-family: Verdana, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.reloadOn {
+	color: green;
+}
+
 .messageGrid {
 	text-overflow: ellipsis;
 }
@@ -31,6 +44,10 @@ div[role=region] {
 	padding: 4px 0px 3px 5px;
 	font-size: 12px;
 	font-family: monospace;
+}
+
+.stacktrace p {
+	word-break: break-all;
 }
 
 .stacktrace p span:nth-child(1) span {
@@ -44,9 +61,9 @@ div[role=region] {
 }
 
 .stacktrace p span:nth-child(3) span {
-	
 	font-weight: bold;
 	color: green;
+	cursor: pointer;
 }
 
 .stacktrace p span:nth-child(3) span:hover {
@@ -83,7 +100,7 @@ div[role=region] div[role=heading] table {
 	border-spacing: 1px;
 }
 
-div.errorLevel {
+div.error_level {
 	height: 75px;
 	width: 75px;
 	margin: 0px;
@@ -135,8 +152,35 @@ div.fields dd.file_search:hover {
 
 div[role=toolbar] {
 	margin: 5px 0px;
-	padding: 2px;
+	padding: 2px 8px 2px 2px;
 	height: 28px;
+}
+
+div[role=toolbar] a {
+	float: right;
+	margin-right: 5px;
+}
+
+div[role=toolbar] div.search {
+	float: right;
+	width: 50%;
+}
+
+div[role=toolbar] div.search span {
+	position: absolute;
+	top: 17px;
+	right: 17px;
+	cursor: pointer;
+	display: table-cell;
+}
+
+div[role=toolbar] div.search input[type=text] {
+	margin: 0px;
+	padding: 2px;
+	border: 1px solid #AAAAAA;
+	font-size: 16px;
+	height: 22px;
+	width: 100%;
 }
 
 div[role=toolbar] h1 {
@@ -146,18 +190,21 @@ div[role=toolbar] h1 {
 	font-size: 20px;
 }
 
-div[role=toolbar] input[type=text] {
-	margin: 0px;
-	padding: 2px;
-	float: right;
-	border: 1px solid #AAAAAA;
-	font-size: 16px;
-	height: 22px;
-	width: 49%;
-}
-
 div[role=toolbar] button {
 	float: right;
+}
+
+div[role=toolbar] label:after {
+	content: '\a0';
+}
+
+div[role=toolbar] label {
+	float: right;
+	vertical-align: baseline;
+	line-height: 28px;
+	font-family: Verdana, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 table[role=grid] {
@@ -170,6 +217,21 @@ div[role=document] {
 	margin: 0px 0px 0px 5px;
 	padding: 0px;
 	overflow: auto;
+}
+
+#jquery-notification {
+	background: transparent url(../images/notification.png) repeat;
+	border-radius: 12px;
+	padding: 20px;
+	cursor: pointer;
+}
+
+#jquery-notification-message {
+	font: bold 24px Helvetica, Arial, sans-serif;
+	color: #FFF;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, .5);
+	text-align: center;
+	white-space: nowrap;
 }
 
 .ui-widget {

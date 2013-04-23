@@ -62,7 +62,8 @@ class RedisFunctions {
      * @throws RedisException On Redis connection error.
      */
     public function __construct($ttl, $host = 'localhost', $port = 6379,
-            $timeout = 0) {
+            $timeout = 0) 
+    {
         $this->_ttl = $ttl;
         $this->_host = $host;
         $this->_port = $port;
@@ -75,7 +76,8 @@ class RedisFunctions {
      *
      * @return null
      */
-    private function _connect() {
+    private function _connect() 
+    {
         try {
             unset($this->_redis);
         } catch (RedisException $ex) {
@@ -98,7 +100,8 @@ class RedisFunctions {
      *
      * @return null
      */
-    public function __destruct() {
+    public function __destruct() 
+    {
         unset($this->_redis);
     }
 
@@ -111,7 +114,8 @@ class RedisFunctions {
      *
      * @throws RedisException On Redis connection error.
      */
-    private function _readys($db) {
+    private function _readys($db) 
+    {
         try {
             $this->_redis->select($db);
         } catch (RedisException $ex) {
@@ -129,7 +133,8 @@ class RedisFunctions {
      *
      * @return null
      */
-    public function process($hash, $timestamp, $count) {
+    public function process($hash, $timestamp, $count) 
+    {
         $this->_readys(3);
 
         if (($line = $this->_redis->get($hash)) === false) {
@@ -148,7 +153,8 @@ class RedisFunctions {
      * 
      * @return void
      */
-    public function processMultiple(array $hashAndTimestamps) {
+    public function processMultiple(array $hashAndTimestamps) 
+    {
         foreach ($hashAndTimestamps as $hashAndTimestamp) {
             list($hash, $timestamp, $count) = $hashAndTimestamp;
             $this->process($hash, $timestamp, $count);
@@ -164,7 +170,8 @@ class RedisFunctions {
      *
      * @return array The stored error.
      */
-    public function store($hash, $timestamp, array $line = null) {
+    public function store($hash, $timestamp, array $line = null) 
+    {
         $this->_readys(1);
 
         if ($line === null) {
@@ -206,7 +213,8 @@ class RedisFunctions {
      *
      * @return null
      */
-    public function index($hash, $timestamp, array $line, $count) {
+    public function index($hash, $timestamp, array $line, $count) 
+    {
         $this->_readys(2);
 
         $oldLastTimestamp = $this->_redis
@@ -235,7 +243,8 @@ class RedisFunctions {
      *
      * @return null
      */
-    public function cleanIndexes() {
+    public function cleanIndexes() 
+    {
         $this->_readys(2);
 
         $hashes = $this->_redis
@@ -260,7 +269,8 @@ class RedisFunctions {
      *
      * @return array An array of [string key, integer timestamp, integer count].
      */
-    public function getIncoming($limit = 1000) {
+    public function getIncoming($limit = 1000) 
+    {
         $this->_readys(3);
 
         $amount = min($limit, $this->getIncomingSize());
@@ -275,7 +285,8 @@ class RedisFunctions {
      *
      * @return integer
      */
-    public function getIncomingSize() {
+    public function getIncomingSize() 
+    {
         $this->_readys(3);
 
         return $this->_redis->lSize('incoming');
@@ -286,7 +297,8 @@ class RedisFunctions {
      *
      * @return boolean Always true.
      */
-    public function flushAll() {
+    public function flushAll() 
+    {
         $this->_readys(0);
 
         return $this->_redis->flushAll();
@@ -299,7 +311,8 @@ class RedisFunctions {
      *
      * @return array
      */
-    public function splitPath($path) {
+    public function splitPath($path) 
+    {
         return array_filter(preg_split('#[/\\\\\\\.: -]#', $path));
     }
 }

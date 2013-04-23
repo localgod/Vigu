@@ -38,7 +38,8 @@ class ViguDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function __construct() {
+    protected function __construct() 
+    {
         // We want to our daemon to tick once every 1 second.
         $this->loop_interval = 1.00;
 
@@ -59,7 +60,8 @@ class ViguDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function setup() {
+    protected function setup() 
+    {
         if (!isset($this->ini['log'])) {
             $this->fatal_error('The configuration does not define the \'log\' setting.');
         }
@@ -69,16 +71,20 @@ class ViguDaemon extends Core_Daemon {
         }
 
         if (isset($this->ini['redis'])) {
-            $this->_redis = new RedisFunctions($this->ini['ttl'], $this->ini['redis']['host'], $this->ini['redis']['port'], $this->ini['redis']['timeout']);
+            $this->_redis = new RedisFunctions(
+                $this->ini['ttl'], $this->ini['redis']['host'], 
+                $this->ini['redis']['port'], $this->ini['redis']['timeout']);
         } else {
             $this->fatal_error('The configuration does not define a redis section.');
         }
 
         if ($this->is_parent()) {
             $emails = array();
-            if (isset($this->ini['emails'])) foreach ($this->ini['emails'] as $email) {
-                $emails[] = $email;
-                $this->log("Adding $email to notification list.");
+            if (isset($this->ini['emails'])) {
+                foreach ($this->ini['emails'] as $email) {
+                    $emails[] = $email;
+                    $this->log("Adding $email to notification list.");
+                }
             }
             $this->email_distribution_list = $emails;
         }
@@ -95,7 +101,8 @@ class ViguDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function execute() {
+    protected function execute() 
+    {
         /** @var float */
         static $lastCleanUpTime = -999999999;
 
@@ -116,7 +123,8 @@ class ViguDaemon extends Core_Daemon {
      *
      * @return float
      */
-    private function _upTime() {
+    private function _upTime() 
+    {
         return microtime(true) - $this->_startTime;
     }
 
@@ -125,7 +133,8 @@ class ViguDaemon extends Core_Daemon {
      *
      * @return string
      */
-    protected function log_file() {
+    protected function log_file() 
+    {
         return $this->ini['log'];
     }
 }

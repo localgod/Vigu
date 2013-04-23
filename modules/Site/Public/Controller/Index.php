@@ -18,12 +18,14 @@
  * @package  Vigu
  * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
-class SitePublicControllerIndex extends SitePublicController {
+class SitePublicControllerIndex extends SitePublicController
+{
     /**
      * The main view
      *
      * @return void
      */
-    public function indexAction() {
+    public function indexAction()
+    {
     }
 }

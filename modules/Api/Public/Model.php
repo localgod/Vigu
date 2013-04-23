@@ -33,7 +33,8 @@ class ApiPublicModel {
      *
      * @throws RuntimeException On configuration errors.
      */
-    protected static function _config($option) {
+    protected static function _config($option) 
+    {
         if (!isset(self::$_config)) {
             self::_readConfig();
         }
@@ -50,7 +51,8 @@ class ApiPublicModel {
      *
      * @return null
      */
-    private static function _readConfig() {
+    private static function _readConfig()
+    {
         if (file_exists($iniFile = dirname(__FILE__) . '/../../../vigu.ini')) {
             self::$_config = parse_ini_file($iniFile, true);
         } else {

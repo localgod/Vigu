@@ -24,7 +24,8 @@ class ApiPublicController extends FroodController {
      *
      * @return void
      */
-    protected function initialize() {
+    protected function initialize()
+    {
         parent::initialize();
 
         $this->doOutputJson();

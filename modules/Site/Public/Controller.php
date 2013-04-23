@@ -18,13 +18,15 @@
  * @package  Vigu
  * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
-class SitePublicController extends FroodController {
+class SitePublicController extends FroodController
+{
     /**
      * Initialization.
      *
      * @return void
      */
-    protected function initialize() {
+    protected function initialize()
+    {
         parent::initialize();
         $this->doOutputTwig();
     }

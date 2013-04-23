@@ -118,7 +118,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @throws RuntimeException If the key does not match a line.
      */
-    public function __construct($key) {
+    public function __construct($key) 
+    {
         if (!($values = self::_getStorageRedis()->get($key)) || empty($values)) {
             throw new RuntimeException("No line with key, $key, found.");
         }
@@ -133,7 +134,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public function getKey() {
+    public function getKey() 
+    {
         return md5($this->_level . $this->_host . $this->_file . $this->_line . $this->_message);
     }
 
@@ -142,11 +144,12 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public function getCount() {
+    public function getCount() 
+    {
         if (!isset($this->_count)) {
             $redis = self::_getIndexingRedis();
 
-            $this->_count = (integer)$redis->zScore(self::COUNTS_PREFIX, $this->getKey());
+            $this->_count = (integer) $redis->zScore(self::COUNTS_PREFIX, $this->getKey());
         }
 
         return $this->_count;
@@ -157,7 +160,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return string
      */
-    public function getMessage() {
+    public function getMessage() 
+    {
         return $this->_message;
     }
 
@@ -166,7 +170,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return string
      */
-    public function getLevel() {
+    public function getLevel() 
+    {
         return $this->_level;
     }
 
@@ -175,7 +180,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public function getFirst() {
+    public function getFirst() 
+    {
         return $this->_first;
     }
 
@@ -184,7 +190,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public function getLast() {
+    public function getLast() 
+    {
         return $this->_last;
     }
 
@@ -193,7 +200,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return string
      */
-    public function getFile() {
+    public function getFile() 
+    {
         return $this->_file;
     }
 
@@ -202,7 +210,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public function getLine() {
+    public function getLine() 
+    {
         return $this->_line;
     }
 
@@ -211,7 +220,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return string
      */
-    public function getHost() {
+    public function getHost() 
+    {
         return $this->_host;
     }
 
@@ -220,7 +230,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return array
      */
-    public function getContext() {
+    public function getContext() 
+    {
         return $this->_context;
     }
 
@@ -229,7 +240,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return array
      */
-    public function getStacktrace() {
+    public function getStacktrace() 
+    {
         return $this->_stacktrace;
     }
 
@@ -238,7 +250,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return boolean True if the line is handled.
      */
-    public function isHandled() {
+    public function isHandled() 
+    {
         if (!isset($this->_isHandled)) {
             $redis = self::_getIndexingRedis();
             $this->_isHandled = $redis->zScore(self::HANDLED_INDEX, $this->getKey()) == 1.0;
@@ -251,7 +264,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return array
      */
-    public static function getAllLevels() {
+    public static function getAllLevels() 
+    {
         $redis = self::_getIndexingRedis();
 
         $levelIndexes = $redis->keys(self::LEVEL_PREFIX . '*');
@@ -274,7 +288,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      * @return ApiPublicModelLine[]
      * @throws RuntimeException if failing to create a new ApiPublicModelLine
      */
-    public static function getMostRecent($offset, $limit, $path = null, $level = null, $handled = false) {
+    public static function getMostRecent($offset, $limit, $path = null, $level = null, $handled = false) 
+    {
         return self::_getByPrefix(self::TIMESTAMPS_PREFIX, $offset, $limit, $path, $level, $handled);
     }
 
@@ -290,7 +305,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      * @return ApiPublicModelLine[]
      * @throws RuntimeException if failing to create a new ApiPublicModelLine
      */
-    public static function getMostTriggered($offset, $limit, $path = null, $level = null, $handled = false) {
+    public static function getMostTriggered($offset, $limit, $path = null, $level = null, $handled = false) 
+    {
         return self::_getByPrefix(self::COUNTS_PREFIX, $offset, $limit, $path, $level, $handled);
     }
 
@@ -303,7 +319,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return integer
      */
-    public static function getTotal($path = null, $level = null, $handled = false) {
+    public static function getTotal($path = null, $level = null, $handled = false) 
+    {
         $redis = self::_getIndexingRedis();
 
         $id = uniqid(self::SEARCH_PREFIX, true);
@@ -347,7 +364,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return ApiPublicModelLine[]
      */
-    private static function _getByPrefix($prefix, $offset, $limit, $path = null, $level = null, $handled = false) {
+    private static function _getByPrefix($prefix, $offset, $limit, $path = null, $level = null, $handled = false) 
+    {
         $redis = self::_getIndexingRedis();
         $start = $offset;
         // We fetch more results from redis than we need, in case we need to discard some of them
@@ -403,7 +421,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return null
      */
-    public function handle() {
+    public function handle() 
+    {
         $redis = self::_getIndexingRedis();
 
         $redis->zAdd(self::HANDLED_INDEX, 1.0, $this->getKey());
@@ -416,7 +435,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return null
      */
-    public function unhandle() {
+    public function unhandle() 
+    {
         $redis = self::_getIndexingRedis();
 
         $redis->zRem(self::HANDLED_INDEX, $this->getKey());
@@ -432,7 +452,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      * @throws RedisException
      * @throws RuntimeException
      */
-    private static function _getStorageRedis() {
+    private static function _getStorageRedis() 
+    {
         if (self::$_storageRedis == null) {
             self::$_storageRedis = self::_getRedis();
             self::$_storageRedis->select(1);
@@ -448,7 +469,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      * @throws RedisException
      * @throws RuntimeException
      */
-    private static function _getIndexingRedis() {
+    private static function _getIndexingRedis() 
+    {
         if (self::$_indexingRedis == null) {
             self::$_indexingRedis = self::_getRedis();
             self::$_indexingRedis->select(2);
@@ -465,7 +487,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      * @throws RedisException
      * @throws RuntimeException
      */
-    private static function _getRedis() {
+    private static function _getRedis() 
+    {
         $redis = new Redis();
         if (!$redis->connect(self::_config('host'), self::_config('port'), self::_config('timeout'))) {
             throw new RuntimeException("Could not connect to Redis server.");
@@ -482,7 +505,8 @@ class ApiPublicModelLine extends ApiPublicModel {
      *
      * @return array
      */
-    private static function _splitPath($path) {
+    private static function _splitPath($path) 
+    {
         return array_filter(preg_split('#[/\\\\\\\.: -]#', $path));
     }
 }

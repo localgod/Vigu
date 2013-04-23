@@ -76,7 +76,8 @@ class ViguErrorHandler {
      *
      * @return boolean True on success, false on failure.
      */
-    public static function readConfig() {
+    public static function readConfig() 
+    {
         if (file_exists($iniFile = dirname(__FILE__) . '/vigu.ini')) {
             $config = parse_ini_file($iniFile, true);
 
@@ -106,7 +107,8 @@ class ViguErrorHandler {
      *
      * @return null
      */
-    public static function hookupIfEnabled() {
+    public static function hookupIfEnabled() 
+    {
         if (self::$_enabled) {
             register_shutdown_function('ViguErrorHandler::shutdown');
             set_error_handler('ViguErrorHandler::error');
@@ -119,7 +121,8 @@ class ViguErrorHandler {
      *
      * @return void
      */
-    public static function shutdown() {
+    public static function shutdown() 
+    {
         $lastError = error_get_last();
         $lastLoggedError = self::_getLastLoggedError();
 
@@ -155,7 +158,8 @@ class ViguErrorHandler {
      * @return boolean Always returns false to continue error handling by other error handlers, and PHP itself.
      */
     public static function error($errno = 0, $errstr = '', $errfile = '',
-            $errline = 0, $errcontext = null) {
+            $errline = 0, $errcontext = null) 
+    {
         if (error_reporting() !== 0) {
             self::_logError($errno, $errstr, $errfile, $errline, $errcontext,
                     debug_backtrace(false));
@@ -171,14 +175,16 @@ class ViguErrorHandler {
      *
      * @return void
      */
-    public static function exception(Exception $exception) {
+    public static function exception(Exception $exception) 
+    {
         self::_logError(
                 preg_replace('/(?:([a-z])([A-Z][a-z]))/', '$1 $2',
                         get_class($exception)), $exception->getMessage(),
                 $exception->getFile(), $exception->getLine(), array(),
                 $exception->getTrace());
 
-        // Exceptions thrown in exception handlers are useless prior to 5.3.6, and <5.3 does not support inner exceptions.
+        // Exceptions thrown in exception handlers are useless prior 
+        // to 5.3.6, and <5.3 does not support inner exceptions.
         if (defined('PHP_MAJOR_VERSION') && PHP_MAJOR_VERSION >= 5
                 && PHP_MINOR_VERSION >= 3 && PHP_RELEASE_VERSION >= 6) {
             $ex = new Exception(
@@ -201,45 +207,46 @@ class ViguErrorHandler {
      *
      * @return string
      */
-    private static function _errnoToString($errno) {
+    private static function _errnoToString($errno) 
+    {
         switch ($errno) {
-        // Default
-        default:
-            return sprintf('UNKNOWN[%d/%b]', $errno, $errno);
-
-        // PHP 5.2+ error types
-        case E_ERROR:
-            return 'ERROR';
-        case E_WARNING:
-            return 'WARNING';
-        case E_PARSE:
-            return 'PARSE';
-        case E_NOTICE:
-            return 'NOTICE';
-        case E_CORE_ERROR:
-            return 'CORE ERROR';
-        case E_CORE_WARNING:
-            return 'CORE WARNING';
-        case E_COMPILE_ERROR:
-            return 'COMPILE ERROR';
-        case E_COMPILE_WARNING:
-            return 'COMPILE WARNING';
-        case E_USER_ERROR:
-            return 'USER ERROR';
-        case E_USER_WARNING:
-            return 'USER WARNING';
-        case E_USER_NOTICE:
-            return 'USER NOTICE';
-        case E_STRICT:
-            return 'STRICT';
-        case E_RECOVERABLE_ERROR:
-            return 'RECOVERABLE ERROR';
-
-        // PHP 5.3+ only
-        case defined('E_DEPRECATED') ? E_DEPRECATED : 10000000:
-            return 'DEPRECATED';
-        case defined('E_USER_DEPRECATED') ? E_USER_DEPRECATED : 10000000:
-            return 'USER DEPRECATED';
+            // Default
+            default:
+                return sprintf('UNKNOWN[%d/%b]', $errno, $errno);
+    
+                // PHP 5.2+ error types
+            case E_ERROR:
+                return 'ERROR';
+            case E_WARNING:
+                return 'WARNING';
+            case E_PARSE:
+                return 'PARSE';
+            case E_NOTICE:
+                return 'NOTICE';
+            case E_CORE_ERROR:
+                return 'CORE ERROR';
+            case E_CORE_WARNING:
+                return 'CORE WARNING';
+            case E_COMPILE_ERROR:
+                return 'COMPILE ERROR';
+            case E_COMPILE_WARNING:
+                return 'COMPILE WARNING';
+            case E_USER_ERROR:
+                return 'USER ERROR';
+            case E_USER_WARNING:
+                return 'USER WARNING';
+            case E_USER_NOTICE:
+                return 'USER NOTICE';
+            case E_STRICT:
+                return 'STRICT';
+            case E_RECOVERABLE_ERROR:
+                return 'RECOVERABLE ERROR';
+    
+                // PHP 5.3+ only
+            case defined('E_DEPRECATED') ? E_DEPRECATED : 10000000:
+                return 'DEPRECATED';
+            case defined('E_USER_DEPRECATED') ? E_USER_DEPRECATED : 10000000:
+                return 'USER DEPRECATED';
         }
     }
 
@@ -256,7 +263,8 @@ class ViguErrorHandler {
      * @return void
      */
     private static function _logError($errno, $message, $file, $line,
-            $context = array(), $stacktrace = array()) {
+            $context = array(), $stacktrace = array()) 
+    {
         $level = is_string($errno) ? $errno : self::_errnoToString($errno);
         $host = self::_getHost();
 
@@ -284,7 +292,8 @@ class ViguErrorHandler {
      *
      * @return array|null
      */
-    private static function _getLastLoggedError() {
+    private static function _getLastLoggedError() 
+    {
         if (!empty(self::$_log)) {
             return self::$_log[self::$_lastLoggedKey];
         } else {
@@ -299,37 +308,44 @@ class ViguErrorHandler {
      *
      * @return array The cleaned stacktrace.
      */
-    private static function _cleanStacktrace(&$stacktrace) {
+    private static function _cleanStacktrace(&$stacktrace) 
+    {
         $newStacktrace = array();
 
         foreach ($stacktrace as &$line) {
             $newLine = array('args' => array(), 'function' => '', 'line' => 0,
                     'file' => '', 'class' => '', 'type' => '',);
-            if (isset($line['args']))
+            if (isset($line['args'])) {
                 foreach ($line['args'] as $name => &$arg) {
                     switch (true) {
-                    case is_object($arg):
-                        $newLine['args'][$name] = 'instance of '
-                                . get_class($arg);
-                        break;
-                    case is_array($arg):
-                        $newLine['args'][$name] = 'array[' . count($arg) . ']';
-                        break;
-                    default:
-                        $newLine['args'][$name] = $arg;
-                        break;
+                        case is_object($arg):
+                            $newLine['args'][$name] = 'instance of '
+                                    . get_class($arg);
+                            break;
+                        case is_array($arg):
+                            $newLine['args'][$name] = 'array[' . count($arg) . ']';
+                            break;
+                        default:
+                            $newLine['args'][$name] = $arg;
+                            break;
                     }
                 }
-            if (isset($line['function']))
+            }
+            if (isset($line['function'])) {
                 $newLine['function'] = $line['function'];
-            if (isset($line['line']))
+            }
+            if (isset($line['line'])) {
                 $newLine['line'] = $line['line'];
-            if (isset($line['file']))
+            }
+            if (isset($line['file'])) {
                 $newLine['file'] = $line['file'];
-            if (isset($line['class']))
+            }
+            if (isset($line['class'])) {
                 $newLine['class'] = $line['class'];
-            if (isset($line['type']))
+            }
+            if (isset($line['type'])) {
                 $newLine['type'] = $line['type'];
+            }
             $newStacktrace[] = $newLine;
         }
 
@@ -343,21 +359,22 @@ class ViguErrorHandler {
      *
      * @return array The cleaned context.
      */
-    private static function _cleanContext($context) {
+    private static function _cleanContext($context) 
+    {
         $newContext = array();
 
         foreach ($context as $key => $var) {
             if (array_search($key, self::$_superGlobals) === false) {
                 switch (true) {
-                case is_object($var):
-                    $newContext[$key] = 'instance of ' . get_class($var);
-                    break;
-                case is_array($var):
-                    $newContext[$key] = 'array[' . count($var) . ']';
-                    break;
-                default:
-                    $newContext[$key] = $var;
-                    break;
+                    case is_object($var):
+                        $newContext[$key] = 'instance of ' . get_class($var);
+                        break;
+                    case is_array($var):
+                        $newContext[$key] = 'array[' . count($var) . ']';
+                        break;
+                    default:
+                        $newContext[$key] = $var;
+                        break;
                 }
             }
         }
@@ -370,7 +387,8 @@ class ViguErrorHandler {
      *
      * @return string
      */
-    private static function _getHost() {
+    private static function _getHost() 
+    {
         if (!isset(self::$_host)) {
             if (isset($_SERVER['HTTP_HOST'])) {
                 self::$_host = $_SERVER['HTTP_HOST'];
@@ -391,7 +409,8 @@ class ViguErrorHandler {
      *
      * @return void
      */
-    private static function _send() {
+    private static function _send() 
+    {
         if (!empty(self::$_log)) {
             if (class_exists('Redis')) {
                 $redis = new Redis();

@@ -32,7 +32,8 @@ class ApiPublicControllerLog extends ApiPublicController {
      *
      * @return void
      */
-    public function gridAction($rows, $page, $sidx, $path, $handled, $level) {
+    public function gridAction($rows, $page, $sidx, $path, $handled, $level) 
+    {
         $timeStart = microtime(true);
         $offset = $rows * ($page - 1);
         $limit  = $rows;
@@ -86,7 +87,8 @@ class ApiPublicControllerLog extends ApiPublicController {
      *
      * @return void
      */
-    public function detailsAction($key) {
+    public function detailsAction($key) 
+    {
         if ($key === null) {
             $this->assign('error', 'No key given - cannot show details.');
             return;
@@ -123,7 +125,8 @@ class ApiPublicControllerLog extends ApiPublicController {
      *
      * @return void
      */
-    public function errorLevelsAction() {
+    public function errorLevelsAction() 
+    {
         $levels = ApiPublicModelLine::getAllLevels();
         sort($levels);
         $this->assign('levels', $levels);
@@ -136,7 +139,8 @@ class ApiPublicControllerLog extends ApiPublicController {
      * 
      * @return void
      */
-    public function handleAction($key) {
+    public function handleAction($key) 
+    {
         try {
             $line = new ApiPublicModelLine($key);
         } catch (RuntimeException $e) {
@@ -153,7 +157,8 @@ class ApiPublicControllerLog extends ApiPublicController {
      * 
      * @return void
      */
-    public function unHandleAction($key) {
+    public function unHandleAction($key) 
+    {
         try {
             $line = new ApiPublicModelLine($key);
         } catch (RuntimeException $e) {

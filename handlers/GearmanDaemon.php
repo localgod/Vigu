@@ -41,7 +41,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function __construct() {
+    protected function __construct()
+    {
         // We want to our daemon to tick once every 2 seconds.
         $this->loop_interval = 2.00;
 
@@ -62,7 +63,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function setup() {
+    protected function setup()
+    {
         if (!isset($this->ini['log'])) {
             $this->fatal_error('The configuration does not define the \'log\' setting.');
         }
@@ -72,7 +74,9 @@ class ViguGearmanDaemon extends Core_Daemon {
         }
 
         if (isset($this->ini['redis'])) {
-            $this->_redis = new RedisFunctions($this->ini['ttl'], $this->ini['redis']['host'], $this->ini['redis']['port'], $this->ini['redis']['timeout']);
+            $this->_redis = new RedisFunctions(
+                    $this->ini['ttl'], $this->ini['redis']['host'], 
+                    $this->ini['redis']['port'], $this->ini['redis']['timeout']);
         } else {
             $this->fatal_error('The configuration does not define a redis section.');
         }
@@ -81,20 +85,25 @@ class ViguGearmanDaemon extends Core_Daemon {
             $this->_gearman = new GearmanClient();
             $this->_gearman->addServer($this->ini['gearman']['host'], $this->ini['gearman']['port']);
 
-            $this->_gearmanAdmin = new GearmanAdmin($this->ini['gearman']['host'], $this->ini['gearman']['port'], $this->ini['gearman']['timeout']);
+            $this->_gearmanAdmin = new GearmanAdmin(
+                    $this->ini['gearman']['host'], $this->ini['gearman']['port'], 
+                    $this->ini['gearman']['timeout']);
         } else {
             $this->fatal_error('The configuration does not define a gearman section.');
         }
 
         if (!isset($this->ini['gearman']['workers'])) {
-            $this->fatal_error('The configuration does not define [gearman] workers. You must set this to the number of gearman workers you want.');
+            $this->fatal_error('The configuration does not define [gearman] workers. 
+                    You must set this to the number of gearman workers you want.');
         }
 
         if ($this->is_parent()) {
             $emails = array();
-            if (isset($this->ini['emails'])) foreach ($this->ini['emails'] as $email) {
-                $emails[] = $email;
-                $this->log("Adding $email to notification list.");
+            if (isset($this->ini['emails'])) {
+                foreach ($this->ini['emails'] as $email) {
+                    $emails[] = $email;
+                    $this->log("Adding $email to notification list.");
+                }
             }
             $this->email_distribution_list = $emails;
         }
@@ -114,7 +123,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return null
      */
-    protected function execute() {
+    protected function execute() 
+    {
         if ($this->_ticks++ % 150 == 0) {
             $this->_cleanupAndCheckWorkers();
         }
@@ -139,10 +149,12 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return null
      */
-    private function _cleanupAndCheckWorkers() {
+    private function _cleanupAndCheckWorkers() 
+    {
         $this->log('Cleaning up...');
         $this->_redis->cleanIndexes();
-        if (($missing = $this->ini['gearman']['workers'] - $this->_gearmanAdmin->refreshStatus()->getAvailable('incoming')) > 0) {
+        if (($missing = $this->ini['gearman']['workers'] - 
+                $this->_gearmanAdmin->refreshStatus()->getAvailable('incoming')) > 0) {
             $this->log("I'm missing $missing peons...");
             for ($i = 0; $i < $missing; $i++) {
                 $this->_newPeon();
@@ -155,7 +167,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @param array $data The work to perform. [hash, timestamp] pairs.
      */
-    private function _order(array $data) {
+    private function _order(array $data) 
+    {
         $this->log('Ordering peon to work. (Chop down ' . count($data) .' trees)');
 
         $this->_gearman->addTaskBackground('incoming', json_encode($data));
@@ -166,7 +179,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return null
      */
-    private function _newPeon() {
+    private function _newPeon() 
+    {
         $this->log('I\'m starting a new peon...');
         system("nohup php peon.php >/dev/null 2>&1 &");
     }
@@ -176,7 +190,8 @@ class ViguGearmanDaemon extends Core_Daemon {
      *
      * @return string
      */
-    protected function log_file() {
+    protected function log_file() 
+    {
         return $this->ini['log'];
     }
 }

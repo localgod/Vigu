@@ -18,7 +18,8 @@
  * @package  Vigu
  * @author   Johannes Skov Frandsen <localgod@heaven.dk>
  */
-class DummyTest extends PHPUnit_Framework_TestCase {
+class DummyTest extends PHPUnit_Framework_TestCase
+{
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -26,7 +27,8 @@ class DummyTest extends PHPUnit_Framework_TestCase {
      * 
      * @return void
      */
-    protected function setUp() {
+    protected function setUp()
+    {
     }
 
     /**
@@ -35,7 +37,8 @@ class DummyTest extends PHPUnit_Framework_TestCase {
      * 
      * @return void
      */
-    protected function tearDown() {
+    protected function tearDown()
+    {
     }
 
     /**
@@ -44,7 +47,8 @@ class DummyTest extends PHPUnit_Framework_TestCase {
      * @todo Implement TestDummy().
      * @return void
      */
-    public function testDummy() {
+    public function testDummy()
+    {
         $this->markTestIncomplete('This test has not been implemented yet.');
     }
 }

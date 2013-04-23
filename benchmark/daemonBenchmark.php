@@ -30,8 +30,8 @@ usleep(250000);
 echo "Monitoring incoming...\n";
 
 while (($size = $redis->getIncomingSize()) > 0) {
-	echo "Incoming size is $size...\n";
-	usleep(100000);
+    echo "Incoming size is $size...\n";
+    usleep(100000);
 }
 
 printf("Incoming queue emptied in %.1f seconds.\n", microtime(true) - $start);

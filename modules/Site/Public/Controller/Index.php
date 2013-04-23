@@ -19,11 +19,11 @@
  * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class SitePublicControllerIndex extends SitePublicController {
-	/**
-	 * The main view
-	 *
-	 * @return void
-	 */
-	public function indexAction() {
-	}
+    /**
+     * The main view
+     *
+     * @return void
+     */
+    public function indexAction() {
+    }
 }

@@ -19,14 +19,14 @@
  * @author   Jens Riisom Schultz <ibber_of_crew42@hotmail.com>
  */
 class ApiPublicController extends FroodController {
-	/**
-	 * Initialization.
-	 *
-	 * @return void
-	 */
-	protected function initialize() {
-		parent::initialize();
+    /**
+     * Initialization.
+     *
+     * @return void
+     */
+    protected function initialize() {
+        parent::initialize();
 
-		$this->doOutputJson();
-	}
+        $this->doOutputJson();
+    }
 }

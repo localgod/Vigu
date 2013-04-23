@@ -32,8 +32,8 @@ echo "Connecting gearman admin...\n";
 $admin = new GearmanAdmin();
 
 while (($size = $admin->refreshStatus()->getTotal('incoming')) > 0) {
-	echo "Queue size is $size...\n";
-	usleep(100000);
+    echo "Queue size is $size...\n";
+    usleep(100000);
 }
 
 printf("Gearman job queue emptied in %.1f seconds.\n", microtime(true) - $start);

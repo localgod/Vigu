@@ -12,7 +12,7 @@
  * @link      https://github.com/localgod/Vigu
  */
 if (false === spl_autoload_functions()) {
-	if (function_exists('__autoload')) {
-		spl_autoload_register('__autoload', false);
-	}
+    if (function_exists('__autoload')) {
+        spl_autoload_register('__autoload', false);
+    }
 }

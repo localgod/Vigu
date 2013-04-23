@@ -1,4 +1,4 @@
-build/
+target/
 lib/*
 !lib/zaphod
 .project

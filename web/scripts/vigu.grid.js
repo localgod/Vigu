@@ -76,8 +76,6 @@ Vigu.Grid = (function($) {
 		reload : function() {
 			$("#grid").jqGrid().setGridParam({page : 1});
 			$("#grid").jqGrid().setGridParam({url : '/api/log/grid' + Vigu.Grid.queryString()}).trigger("reloadGrid");
-
-			Vigu.Toolbar.getErrorLevels($('div[role=toolbar]'));
 		},
 		/**
 		 * Auto refresh grid

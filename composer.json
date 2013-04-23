@@ -1,0 +1,108 @@
+{
+	"name" : "localgod/Vigu",
+	"description" : "Error aggregation application written in and for Php",
+	"type" : "Application",
+	"authors" : [{
+			"name" : "Johannes Skov Frandsen",
+			"email" : "localgod@heaven.dk",
+			"homepage" : "https://github.com/localgod",
+			"role" : "Lead"
+		}, {
+			"name" : "Jens Riisom Schultz",
+			"email" : "ibber_of_crew42@hotmail.com",
+			"homepage" : "https://github.com/Ibmurai",
+			"role" : "Backend"
+		}, {
+			"name" : "akimsko",
+			"homepage" : "https://github.com/akimsko",
+			"role" : "Contributor"
+		}, {
+			"name" : "Brian Demant",
+			"homepage" : "https://github.com/briandemant",
+			"role" : "Contributor"
+		}, {
+			"name" : "Rene H. Larsen",
+			"role" : "Contributor"
+		}
+	],
+	"keywords" : [
+		"Error aggregation application Php"
+	],
+	"homepage" : "https://github.com/localgod/Vigu",
+	"license" : [
+		"Apache-2.0"
+	],
+	"require" : {
+		"php-gearman-admin" : "~1",
+		"PHP-Daemon" : "~1",
+		"frood" : "~1",
+		"froodTwig" : "~1"
+	},
+	"support" : {
+		"email" : "localgod@heaven.dk",
+		"issues" : "https://github.com/localgod/Vigu/issues",
+		"wiki" : "https://github.com/localgod/Vigu/wiki"
+	},
+	"repositories" : [{
+			"name" : "Frood",
+			"type" : "package",
+			"url" : "https://github.com/Ibmurai/frood",
+			"package" : {
+				"name" : "frood",
+				"version" : "1.2.1",
+				"source" : {
+					"type" : "git",
+					"url" : "git@github.com:Ibmurai/frood.git",
+					"reference" : "master"
+				}
+			}
+		}, {
+			"name" : "froodTwig",
+			"type" : "package",
+			"url" : "http://github.com/akimsko/froodTwig.git",
+			"package" : {
+				"name" : "froodTwig",
+				"version" : "1.0",
+				"source" : {
+					"type" : "git",
+					"url" : "http://github.com/akimsko/froodTwig.git",
+					"reference" : "master"
+				}
+			}
+		}, {
+			"name" : "PHP-Daemon",
+			"type" : "package",
+			"url" : "https://github.com/akimsko/PHP-Daemon.git",
+			"package" : {
+				"name" : "PHP-Daemon",
+				"version" : "1.0",
+				"source" : {
+					"type" : "git",
+					"url" : "https://github.com/akimsko/PHP-Daemon.git",
+					"reference" : "master"
+				}
+			}
+		}, {
+			"name" : "php-gearman-admin",
+			"type" : "package",
+			"url" : "http://github.com/Ibmurai/php-gearman-admin.git",
+			"package" : {
+				"name" : "php-gearman-admin",
+				"version" : "1.0",
+				"source" : {
+					"type" : "git",
+					"url" : "http://github.com/Ibmurai/php-gearman-admin.git",
+					"reference" : "master"
+				}
+			}
+		}
+	],
+	"config" : {
+		"vendor-dir" : "lib"
+	},
+	"scripts" : {
+		"post-install-cmd" : [
+			"php lib/froodTwig/install.php"
+		]
+	}
+}

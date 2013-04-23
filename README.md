@@ -44,7 +44,7 @@ Installing
 ----------
 
   * Clone vigu from git, i.e. `git clone http://github.com/localgod/Vigu.git Vigu`
-  * Run `install.php` from command line.
+  * Run `php composer.phar install` from command line.
   * Copy `vigu.ini.dist` to `vigu.ini` and edit it.
   * Make a vhost, to point at the root of vigu or the `web/` folder, or however you choose to serve the site.
   * Set the daemon up, using `php handlers/daemon.php -I`. The daemon should be running at all times, but it may ONLY run on the Vigu server.

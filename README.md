@@ -1,5 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/localgod/Vigu.png?branch=master)](http://travis-ci.org/localgod/Vigu)
 Vigu
+[![Maintenance](https://img.shields.io/maintenance/yes/2013.svg)]()
 ====
 
 *Authors* [Jens Riisom Schultz](mailto:ibber_of_crew42@hotmail.com)(_backend_), [Johannes Skov Frandsen](mailto:localgod@heaven.dk)(_frontend_)
